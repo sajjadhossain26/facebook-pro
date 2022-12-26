@@ -1,10 +1,19 @@
 import axios from "axios";
 import createToast from "../../utility/toast";
+import { LOADER_START } from "../loader/loaderTypes";
 import {
+  LOGIN_FAILED,
+  LOGIN_REQUEST,
+  LOGIN_SUCCESS,
+  LOG_OUT,
   REGISTER_FAILED,
   REGISTER_REQUEST,
   REGISTER_SUCCESS,
+  TOKEN_USER_FAILED,
+  TOKEN_USER_REQUEST,
+  TOKEN_USER_SUCCESS,
 } from "./actionType";
+import Cookies from "js-cookie";
 
 // user register
 export const userRegister =
@@ -112,7 +121,7 @@ export const checkPasswordResetCode = (data, navigate) => async (dispatch) => {
 // Change password
 export const changePassword = (data, navigate) => async (dispatch) => {
   try {
-    axios
+    await axios
       .post("/api/v1/user/user-password-reset", {
         id: data.id,
         code: data.code,
@@ -133,13 +142,26 @@ export const changePassword = (data, navigate) => async (dispatch) => {
 // User login
 export const userLogin = (data, navigate) => async (dispatch) => {
   try {
-    axios
+    dispatch({
+      type: LOGIN_REQUEST,
+    });
+    await axios
       .post("/api/v1/user/login", data)
       .then((res) => {
+        dispatch({
+          type: LOGIN_SUCCESS,
+          payload: res.data.user,
+        });
+        dispatch({
+          type: LOADER_START,
+        });
         createToast(res.data.message, "success");
-        navigate("/home");
+        navigate("/");
       })
       .catch((error) => {
+        dispatch({
+          type: LOGIN_FAILED,
+        });
         createToast(error.response.data.message);
       });
   } catch (error) {
@@ -150,7 +172,7 @@ export const userLogin = (data, navigate) => async (dispatch) => {
 // Resend password reset link
 export const resendPasswordReset = (data) => async (dispatch) => {
   try {
-    axios
+    await axios
       .post("/api/v1/user/resend-password-reset", { auth: data.auth })
       .then((res) => {
         createToast(res.data.message, "success");
@@ -161,4 +183,48 @@ export const resendPasswordReset = (data) => async (dispatch) => {
   } catch (error) {
     createToast(error.response.data.message);
   }
+};
+
+// Token check for Logged user
+export const tokenUser = (data, navigate) => async (dispatch) => {
+  const token = Cookies.get("authToken");
+  try {
+    dispatch({
+      type: TOKEN_USER_REQUEST,
+    });
+    await axios
+      .get("/api/v1/user/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        dispatch({
+          type: TOKEN_USER_SUCCESS,
+          payload: res.data.user,
+        });
+        dispatch({
+          type: LOADER_START,
+        });
+      })
+      .catch((error) => {
+        dispatch({
+          type: TOKEN_USER_FAILED,
+        });
+        dispatch(logOut());
+      });
+  } catch (error) {
+    dispatch(logOut());
+    dispatch({
+      type: TOKEN_USER_FAILED,
+    });
+    createToast(error.response.data.message);
+  }
+};
+
+export const logOut = () => (dispatch) => {
+  Cookies.remove("authToken");
+  dispatch({
+    type: LOG_OUT,
+  });
 };

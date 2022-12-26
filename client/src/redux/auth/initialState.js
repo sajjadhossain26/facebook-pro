@@ -1,7 +1,7 @@
 const initialState = {
-  user: {},
+  user: null,
   loginState: false,
   loading: false,
-  message: "",
+  message: null,
 };
 export default initialState;
