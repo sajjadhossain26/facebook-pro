@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import usePopupClose from "../../hooks/usePopupClose";
 import Avatar from "../Avatar/Avatar";
 
 const TimeLine = () => {
   const { user } = useSelector((state) => state.auth);
   const [userMenu, setUserMenu] = useState(false);
+  const postManage = useRef(null);
+
+  usePopupClose(postManage, setUserMenu);
 
   return (
     <>
@@ -73,7 +77,7 @@ const TimeLine = () => {
                   </span>
                 </div>
               </div>
-              <div className="post-menu">
+              <div className="post-menu" ref={postManage}>
                 {userMenu && (
                   <div className="post-dropdown-menu">
                     <ul>

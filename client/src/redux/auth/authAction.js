@@ -2,16 +2,22 @@ import axios from "axios";
 import createToast from "../../utility/toast";
 import { LOADER_START } from "../loader/loaderTypes";
 import {
+  ADD_FRIEND,
+  COVER_PHOTO_UPLOAD,
+  FEATURED_COLLECTION_SLIDER,
+  GET_ALL_USER,
   LOGIN_FAILED,
   LOGIN_REQUEST,
   LOGIN_SUCCESS,
   LOG_OUT,
+  PROFILE_PHOTO_UPLOAD,
   REGISTER_FAILED,
   REGISTER_REQUEST,
   REGISTER_SUCCESS,
   TOKEN_USER_FAILED,
   TOKEN_USER_REQUEST,
   TOKEN_USER_SUCCESS,
+  USER_PROFILE_UPDATE,
 } from "./actionType";
 import Cookies from "js-cookie";
 
@@ -227,4 +233,118 @@ export const logOut = () => (dispatch) => {
   dispatch({
     type: LOG_OUT,
   });
+};
+
+// Profile bio update
+export const profileUpdate = (data, id, setShowBio) => async (dispatch) => {
+  try {
+    await axios
+      .put(`/api/v1/user/profile-update/${id}`, data)
+      .then((res) => {
+        setShowBio(false);
+        dispatch({ type: USER_PROFILE_UPDATE, payload: data });
+      })
+      .catch((error) => {
+        createToast(error.response.data.message);
+      });
+  } catch (error) {
+    createToast(error.response.data.message);
+  }
+};
+
+// featured update
+export const featuredUpdate = (data, id) => async (dispatch) => {
+  try {
+    await axios
+      .post(`/api/v1/user/featured-slider/${id}`, data)
+      .then((res) => {
+        dispatch({ type: FEATURED_COLLECTION_SLIDER, payload: res.data.user });
+        console.log(data);
+      })
+      .catch((error) => {
+        createToast(error.response.data.message);
+      });
+  } catch (error) {
+    createToast(error.response.data.message);
+  }
+};
+
+// profile update
+export const profilePhotoUpload = (data, id) => async (dispatch) => {
+  try {
+    await axios
+      .put(`/api/v1/user/profile-photo-update/${id}`, data)
+      .then((res) => {
+        dispatch({
+          type: PROFILE_PHOTO_UPLOAD,
+          payload: { profile_photo: res.data.user.profile_photo },
+        });
+      })
+      .catch((error) => {
+        createToast(error.response.data.message);
+        console.log(error);
+      });
+  } catch (error) {
+    createToast(error.response.data.message);
+  }
+};
+
+// profile update
+export const coverPhotoUpload = (data, id) => async (dispatch) => {
+  try {
+    await axios
+      .put(`/api/v1/user/cover-photo-update/${id}`, data)
+      .then((res) => {
+        dispatch({
+          type: COVER_PHOTO_UPLOAD,
+          payload: { cover_photo: res.data.user.cover_photo },
+        });
+        createToast(res.data.message, "success");
+      })
+      .catch((error) => {
+        createToast(error.response.data.message);
+        console.log(error);
+      });
+  } catch (error) {
+    createToast(error.response.data.message);
+  }
+};
+
+// Get all user
+export const allUsers = (id) => async (dispatch) => {
+  try {
+    await axios
+      .get(`/api/v1/user/users/${id}`)
+      .then((res) => {
+        dispatch({
+          type: GET_ALL_USER,
+          payload: res.data.users,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  } catch (error) {
+    createToast(error.response.data.message);
+  }
+};
+
+// Add Friend
+export const addFriend = (receiverId, sender) => async (dispatch) => {
+  try {
+    await axios
+      .get(`/api/v1/user/add-friend/${receiverId}/${sender._id}`)
+      .then((res) => {
+        dispatch({
+          type: ADD_FRIEND,
+          payload: res.data.user,
+        });
+        createToast(res.data.message, "success");
+      })
+      .catch((error) => {
+        createToast(error);
+      });
+  } catch (error) {
+    createToast(error.response.data.message);
+  }
 };

@@ -24,6 +24,9 @@ app.use("/api/v1/user", userRoute);
 //custom error handler
 app.use(errorHandler);
 
+// static folder
+app.use(express.static("api/public"));
+
 app.listen(PORT, () => {
   mongoDB();
   console.log(`Server is running on port ${PORT}`.bgGreen.black);

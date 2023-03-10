@@ -61,6 +61,9 @@ const userSchema = mongoose.Schema(
     },
     bio: {
       type: String,
+    },
+    category: {
+      type: String,
       default: null,
     },
     work: {
@@ -109,6 +112,10 @@ const userSchema = mongoose.Schema(
       default: [],
     },
     posts: {
+      type: Array,
+      default: [],
+    },
+    featured: {
       type: Array,
       default: [],
     },

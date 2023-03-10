@@ -787,3 +787,164 @@ export const resendPasswordReset = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @access public
+ * @method PUT
+ * @Route api/user/:id
+ */
+
+export const profileBioUpdate = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+
+    const user = await User.findByIdAndUpdate(id, data);
+    if (user) {
+      res.status(200).json({
+        message: "Profile updated successful",
+      });
+    }
+
+    if (!user) {
+      next(createError(400, "Profile updated failed"));
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @access public
+ * @method PUT
+ * @Route api/user/:id
+ */
+
+export const addFeaturedSlider = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { collection } = req.body;
+    const slider = [];
+    req.files.forEach((item) => {
+      slider.push(item.filename);
+    });
+
+    const { featured } = await User.findById(id);
+    const user = await User.findByIdAndUpdate(
+      id,
+      { featured: [...featured, { collection, slider }] },
+      { new: true }
+    );
+
+    if (user) {
+      res.status(200).json({
+        message: "done",
+        user: user,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @access user
+ * @routes api/user/id
+ * @Method put
+ */
+
+export const userProfilePhotoUpdate = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndUpdate(
+      id,
+      { profile_photo: req.file.filename },
+      { new: true }
+    );
+    if (user) {
+      res.status(200).json({
+        message: "Profile photo uploaded successful",
+        user: user,
+      });
+    }
+  } catch (error) {
+    res.send(error);
+  }
+};
+
+/**
+ * @access user
+ * @routes api/user/id
+ * @Method put
+ */
+
+export const userCoverPhotoUpdate = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndUpdate(
+      id,
+      { cover_photo: req.file.filename },
+      { new: true }
+    );
+    if (user) {
+      res.status(200).json({
+        message: "Cover photo uploaded successful",
+        user: user,
+      });
+    }
+  } catch (error) {
+    res.send(error);
+  }
+};
+
+/**
+ * @access user
+ * @routes api/users/id
+ * @Method get
+ */
+
+export const getAllUsers = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const users = await User.find().where("_id").ne(id);
+    if (users) {
+      res.status(200).json({
+        users: users,
+      });
+    }
+  } catch (error) {
+    res.send(error);
+  }
+};
+
+/**
+ * @access Friend request send
+ * @routes api/users/id
+ * @Method get
+ */
+
+export const sendFriendRequest = async (req, res, next) => {
+  try {
+    const { receiver, sender } = req.params;
+
+    const send = await User.findById(sender);
+    const receive = await User.findById(receiver);
+
+    await receive.updateOne({
+      $push: { request: sender },
+    });
+
+    await receive.updateOne({
+      $push: { followers: sender },
+    });
+    await send.updateOne({
+      $push: { following: receiver },
+    });
+
+    res.status(200).json({
+      message: "Friend Request send Successful",
+    });
+  } catch (error) {
+    next(createError(404, "Friend request failed"));
+  }
+};

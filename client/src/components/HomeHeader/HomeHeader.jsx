@@ -4,16 +4,23 @@ import favicon from "../../assets/icons/favicon.ico";
 import user_pic from "../../assets/images/user.png";
 import { logOut } from "../../redux/auth/authAction";
 import Avatar from "../Avatar/Avatar";
+import { Link } from "react-router-dom";
+import { useRef } from "react";
+import usePopupClose from "../../hooks/usePopupClose";
 
 const HomeHeader = () => {
   const [userMenu, setUserMenu] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const dropMenu = useRef(null);
 
   const handleLogOut = (e) => {
     e.preventDefault();
     dispatch(logOut());
   };
+
+  usePopupClose(dropMenu, setUserMenu);
+
   return (
     <>
       <div className="fb-home-header">
@@ -172,15 +179,21 @@ const HomeHeader = () => {
               </svg>
             </a>
           </div>
-          <div className="fb-user-item" onClick={() => setUserMenu(!userMenu)}>
+          <div
+            className="fb-user-item"
+            onClick={() => setUserMenu(!userMenu)}
+            ref={dropMenu}
+          >
             {userMenu && (
               <div className="user-menu-dropdown">
                 <div className="user-menu-box">
                   <div className="user-data-box">
-                    <div className="user-data-box-item">
-                      <Avatar />
-                      <span>{`${user.first_name} ${user.sur_name}`}</span>
-                    </div>
+                    <Link to="/profile">
+                      <div className="user-data-box-item">
+                        <Avatar />
+                        <span>{`${user.first_name} ${user.sur_name}`}</span>
+                      </div>
+                    </Link>
                     <div className="divider-0"></div>
                     <a href="#">See all profiles</a>
                   </div>
